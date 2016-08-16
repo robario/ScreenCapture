@@ -6,11 +6,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-import org.apache.cordova.CordovaWebView;
-import org.apache.cordova.api.CallbackContext;
-import org.apache.cordova.api.CordovaInterface;
-import org.apache.cordova.api.CordovaPlugin;
-import org.apache.cordova.api.PluginResult;
+import org.apache.cordova.CallbackContext;
+import org.apache.cordova.CordovaInterface;
+import org.apache.cordova.CordovaPlugin;
+import org.apache.cordova.PluginResult;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -18,8 +17,8 @@ import org.json.JSONObject;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Picture;
 import android.graphics.Bitmap.CompressFormat;
+import android.webkit.WebView;
 
 import android.os.Environment;
 
@@ -87,9 +86,8 @@ public class ScreenCapture extends CordovaPlugin {
         			mFileName = nameTemp;
         			mCaptureCount = 0;
         		}
-            	CordovaWebView uiThreadView = webView;
             	//capturePicture writes the entire document into a picture object, this includes areas that aren't visible within the current view
-            	final Picture picture = uiThreadView.capturePicture();
+            	final WebView picture = (WebView)webView.getView();
             	final String fileName = mFileName+"_"+mCaptureCount;
             	mCaptureCount++;
             	
@@ -130,7 +128,7 @@ public class ScreenCapture extends CordovaPlugin {
     						//width and height > 0 means we want to sub rect
     						internalPixels = new int[width*height];
     						bm.getPixels(internalPixels, 0, width, x, y, width, height);
-    						bm = Bitmap.createBitmap(internalPixels,width,height, Bitmap.Config.ARGB_8888);
+    						bm = Bitmap.createScaledBitmap(bm,width,height, true);
     					}
     					else if(compareOptions != null) {
     						int w = picture.getWidth();
