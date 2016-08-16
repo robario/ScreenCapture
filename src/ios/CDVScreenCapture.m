@@ -9,6 +9,42 @@
 #import "CDVScreenCapture.h"
 #import <Cordova/CDV.h>
 
+// inspired by http://stackoverflow.com/questions/26778955/wkwebview-evaluate-javascript-return-value
+
+@interface UIView(SynchronousEvaluateJavaScript)
+- (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script;
+@end
+
+@implementation UIView(SynchronousEvaluateJavaScript)
+- (NSString *)stringByEvaluatingJavaScriptFromString:(NSString *)script
+{
+    __block NSString *resultString = nil;
+
+    if ([self isKindOfClass:[UIWebView class]]) {
+        resultString = [(UIWebView*)self stringByEvaluatingJavaScriptFromString:script];
+    } else {
+        __block BOOL finished = NO;
+
+        [self performSelector:@selector(evaluateJavaScript:completionHandler:) withObject:script withObject:^(id result, NSError *error) {
+                if (error == nil) {
+                    if (result != nil) {
+                        resultString = [NSString stringWithFormat:@"%@", result];
+                    }
+                } else {
+                    NSLog(@"evaluateJavaScript error : %@", error.localizedDescription);
+                }
+                finished = YES;
+            }];
+
+        while (!finished) {
+            [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode beforeDate:[NSDate distantFuture]];
+        }
+    }
+
+    return resultString;
+}
+@end
+
 @implementation CDVScreenCapture
 @synthesize mFileName, mCaptureCount; //global variables retained between plugin calls
 
